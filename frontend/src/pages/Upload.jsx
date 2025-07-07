@@ -1,6 +1,7 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { uploadAPI } from '../services/api';
+import { useLocation } from 'react-router-dom';
 import { 
   UploadCloud, 
   Music, 
@@ -16,9 +17,12 @@ import {
 } from 'lucide-react';
 
 const Upload = () => {
+  const location = useLocation();
+  
   // 基本信息
   const [title, setTitle] = useState('');
   const [artist, setArtist] = useState('');
+  const [isAIGenerated, setIsAIGenerated] = useState(false);
   
   // 文件状态
   const [audioFile, setAudioFile] = useState(null);
@@ -40,6 +44,30 @@ const Upload = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+
+  // 检查是否来自AI生成
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    if (urlParams.get('source') === 'ai') {
+      const aiMusicData = localStorage.getItem('aiGeneratedMusic');
+      if (aiMusicData) {
+        try {
+          const data = JSON.parse(aiMusicData);
+          setTitle(data.title || '');
+          setArtist(data.artist || 'AI Generated');
+          setIsAIGenerated(true);
+          
+          // 清除localStorage
+          localStorage.removeItem('aiGeneratedMusic');
+          
+          // 显示提示信息
+          setSuccessMessage('AI生成的音乐信息已自动填充，请上传音频文件。');
+        } catch (error) {
+          console.error('解析AI音乐数据失败:', error);
+        }
+      }
+    }
+  }, [location]);
 
   // 自动解析音频元数据
   const parseAudioMetadata = async (file) => {
@@ -492,6 +520,21 @@ const Upload = () => {
                 required
               />
             </div>
+
+            {/* AI生成标识 */}
+            {isAIGenerated && (
+              <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                <div className="flex items-center">
+                  <Wand2 className="w-5 h-5 text-purple-600 mr-2" />
+                  <div>
+                    <h4 className="font-medium text-purple-900">AI生成的音乐</h4>
+                    <p className="text-sm text-purple-700">
+                      这首音乐是基于您的播放列表风格生成的，将被标记为AI创作。
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* 上传进度 */}
             {isUploading && (

@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { playlistAPI } from '../services/api';
 import { usePlayer } from '../contexts/PlayerContext';
-import { Play, Music, ArrowLeft } from 'lucide-react';
+import { Play, Music, ArrowLeft, Wand2 } from 'lucide-react';
+import PlaylistAIGenerator from '../components/PlaylistAIGenerator';
 
 const PlaylistDetail = () => {
   const { id } = useParams();
   const [playlist, setPlaylist] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showAIGenerator, setShowAIGenerator] = useState(false);
   const { playSong } = usePlayer();
 
   useEffect(() => {
@@ -76,11 +78,26 @@ const PlaylistDetail = () => {
         返回所有播放列表
       </Link>
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900">{playlist.name}</h1>
-        {playlist.description && (
-          <p className="text-gray-600 mt-2">{playlist.description}</p>
-        )}
-        <p className="text-gray-500 text-sm mt-2">{(playlist.songs || []).length} 首歌曲</p>
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h1 className="text-4xl font-bold text-gray-900">{playlist.name}</h1>
+            {playlist.description && (
+              <p className="text-gray-600 mt-2">{playlist.description}</p>
+            )}
+            <p className="text-gray-500 text-sm mt-2">{(playlist.songs || []).length} 首歌曲</p>
+          </div>
+          
+          {/* AI音乐生成按钮 */}
+          {playlist.songs && playlist.songs.length > 0 && (
+            <button
+              onClick={() => setShowAIGenerator(true)}
+              className="ml-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 flex items-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            >
+              <Wand2 className="w-5 h-5 mr-2" />
+              AI音乐
+            </button>
+          )}
+        </div>
       </div>
 
       {playlist.songs && playlist.songs.length > 0 ? (
@@ -119,6 +136,14 @@ const PlaylistDetail = () => {
             去首页添加歌曲
           </Link>
         </div>
+      )}
+
+      {/* AI音乐生成模态框 */}
+      {showAIGenerator && (
+        <PlaylistAIGenerator
+          playlist={playlist}
+          onClose={() => setShowAIGenerator(false)}
+        />
       )}
     </div>
   );
