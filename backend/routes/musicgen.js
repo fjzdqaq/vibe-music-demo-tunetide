@@ -10,16 +10,17 @@ const router = express.Router();
 // AI歌曲生成接口
 router.post('/generate', requireAuth, async (req, res) => {
   try {
-    const { prompt, duration = 15, withVocals = true /* Replicate MusicGen 默认带人声 */ } = req.body;
+    const { prompt, withVocals = true } = req.body;
+    const duration = 10; // Riffusion模型生成时长固定，这里设置为10s
     
     if (!prompt || prompt.trim().length === 0) {
       return res.status(400).json({ success: false, message: '请提供歌曲描述' });
     }
 
-    console.log(`🎵 接收到AI歌曲生成请求: "${prompt}", 时长: ${duration}s`);
+    console.log(`🎵 接收到AI歌曲生成请求: "${prompt}"`);
     
     // 1. 调用AI音乐服务生成音乐URL
-    const musicUrl = await generateMusicWithReplicate(prompt, duration);
+    const musicUrl = await generateMusicWithReplicate(prompt);
 
     // 2. 从URL下载音频数据
     console.log('⬇️ 正在从Replicate下载生成的音频...');
@@ -39,7 +40,7 @@ router.post('/generate', requireAuth, async (req, res) => {
     // 4. 保存到数据库
     const song = new Song({
       title: `AI生成: ${prompt.substring(0, 50)}`,
-      artist: 'Replicate AI',
+      artist: 'Riffusion AI',
       fileName: fileName,
       filePath: ossUrl,
       coverPath: '/default-cover.jpg',
