@@ -36,8 +36,8 @@ app.get('/', (req, res) => {
   res.json({ 
     message: 'TuneTide API 服务正在运行',
     timestamp: new Date().toISOString(),
-    version: '1.0.0',
-    features: ['音乐播放', '播放列表', '情绪胶囊'],
+    version: '2.0.0',
+    features: ['音乐播放', '播放列表', '情绪胶囊', 'AI音乐生成'],
     // 暂时注释掉上传功能
     // oss: {
     //   region: '华北2（北京）',
