@@ -42,7 +42,15 @@ const songSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  withVocals: {
+    type: Boolean,
+    default: false
+  },
   createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
     type: Date,
     default: Date.now
   }
