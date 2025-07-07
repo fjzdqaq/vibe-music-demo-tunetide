@@ -105,4 +105,12 @@ export const uploadAPI = {
   cancelUpload: (uploadId) => api.delete(`/upload/cancel/${uploadId}`),
 };
 
+// 管理员 API
+export const adminAPI = {
+  getStats: () => api.get('/admin/stats'),
+  getUsers: (params) => api.get('/admin/users', { params }),
+  deleteUser: (id) => api.delete(`/admin/users/${id}`),
+  toggleAdmin: (id) => api.patch(`/admin/users/${id}/toggle-admin`),
+};
+
 export default api; 

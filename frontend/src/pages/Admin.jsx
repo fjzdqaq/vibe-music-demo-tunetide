@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { adminAPI } from '../services/api';
 import { 
   Users, 
   Music, 
@@ -39,13 +40,8 @@ const Admin = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/admin/stats', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      const data = await response.json();
-      setStats(data);
+      const response = await adminAPI.getStats();
+      setStats(response.data);
     } catch (error) {
       console.error('获取统计信息失败:', error);
       setError('获取统计信息失败');
@@ -57,14 +53,12 @@ const Admin = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/admin/users?page=${currentPage}&search=${searchQuery}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+      const response = await adminAPI.getUsers({
+        page: currentPage,
+        search: searchQuery
       });
-      const data = await response.json();
-      setUsers(data.users);
-      setTotalPages(data.pagination.totalPages);
+      setUsers(response.data.users);
+      setTotalPages(response.data.pagination.totalPages);
     } catch (error) {
       console.error('获取用户列表失败:', error);
       setError('获取用户列表失败');
@@ -79,48 +73,25 @@ const Admin = () => {
     }
 
     try {
-      const response = await fetch(`/api/admin/users/${userId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (response.ok) {
-        alert('用户删除成功');
-        fetchUsers();
-        fetchStats();
-      } else {
-        const data = await response.json();
-        alert(data.message || '删除失败');
-      }
+      await adminAPI.deleteUser(userId);
+      alert('用户删除成功');
+      fetchUsers();
+      fetchStats();
     } catch (error) {
       console.error('删除用户失败:', error);
-      alert('删除用户失败');
+      alert(error.response?.data?.message || '删除用户失败');
     }
   };
 
   const handleToggleAdmin = async (userId) => {
     try {
-      const response = await fetch(`/api/admin/users/${userId}/toggle-admin`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        alert(data.message);
-        fetchUsers();
-        fetchStats();
-      } else {
-        const data = await response.json();
-        alert(data.message || '操作失败');
-      }
+      const response = await adminAPI.toggleAdmin(userId);
+      alert(response.data.message);
+      fetchUsers();
+      fetchStats();
     } catch (error) {
       console.error('切换管理员状态失败:', error);
-      alert('操作失败');
+      alert(error.response?.data?.message || '操作失败');
     }
   };
 
