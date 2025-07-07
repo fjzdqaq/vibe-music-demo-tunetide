@@ -3,27 +3,26 @@ const { requireAuth } = require('../middleware/auth');
 const { uploadToOSS } = require('../utils/ossUpload');
 const Song = require('../models/Song');
 const fetch = require('node-fetch');
-const { generateMusicWithReplicate } = require('../services/aiMusicService');
+const { generateMusicWithHuggingFace } = require('../services/aiMusicService');
 
 const router = express.Router();
 
 // AI歌曲生成接口
 router.post('/generate', requireAuth, async (req, res) => {
   try {
-    const { prompt, withVocals = true } = req.body;
-    const duration = 10; // Riffusion模型生成时长固定，这里设置为10s
+    const { prompt, duration = 15 } = req.body;
     
     if (!prompt || prompt.trim().length === 0) {
       return res.status(400).json({ success: false, message: '请提供歌曲描述' });
     }
 
-    console.log(`🎵 接收到AI歌曲生成请求: "${prompt}"`);
+    console.log(`🎵 接收到AI歌曲生成请求: "${prompt}", 时长: ${duration}s`);
     
     // 1. 调用AI音乐服务生成音乐URL
-    const musicUrl = await generateMusicWithReplicate(prompt);
+    const musicUrl = await generateMusicWithHuggingFace(prompt, duration);
 
     // 2. 从URL下载音频数据
-    console.log('⬇️ 正在从Replicate下载生成的音频...');
+    console.log('⬇️ 正在从Hugging Face下载生成的音频...');
     const audioResponse = await fetch(musicUrl);
     if (!audioResponse.ok) {
       throw new Error(`无法下载生成的音频文件: ${audioResponse.statusText}`);
@@ -40,7 +39,7 @@ router.post('/generate', requireAuth, async (req, res) => {
     // 4. 保存到数据库
     const song = new Song({
       title: `AI生成: ${prompt.substring(0, 50)}`,
-      artist: 'Riffusion AI',
+      artist: 'MusicGen AI',
       fileName: fileName,
       filePath: ossUrl,
       coverPath: '/default-cover.jpg',
@@ -49,7 +48,7 @@ router.post('/generate', requireAuth, async (req, res) => {
       uploadedBy: req.user.id,
       isAIGenerated: true,
       aiPrompt: prompt,
-      withVocals: withVocals,
+      withVocals: true, // MusicGen默认生成带人声的
     });
     
     await song.save();

@@ -1,54 +1,44 @@
-const Replicate = require('replicate');
+const { client } = require("@gradio/client");
 const fetch = require('node-fetch');
 
-const replicate = new Replicate({
-  auth: process.env.REPLICATE_API_TOKEN,
-  fetch: fetch,
-});
-
 /**
- * 使用Replicate的Riffusion模型生成音乐
+ * 使用Hugging Face上的公共MusicGen Space生成音乐
  * @param {string} prompt - 音乐描述提示词
- * @returns {Promise<string>} - 返回生成的音乐文件的URL
+ * @param {number} duration - 音乐时长（秒）
+ * @returns {Promise<string>} - 返回生成的音乐文件的临时URL
  */
-const generateMusicWithReplicate = async (prompt) => {
-  console.log('🎵 调用 Replicate API, 使用 riffusion 模型...');
-
-  // Riffusion模型版本，以速度快著称
-  const modelVersion = "8cf61ea6c56afd61d8f5b9ffd14d7c216c0a93844ce2d82ac1c9ecc9c7f24e05";
-
+const generateMusicWithHuggingFace = async (prompt, duration) => {
+  console.log('🎵 连接到Hugging Face公共MusicGen服务...');
+  
   try {
-    const output = await replicate.run(
-      `riffusion/riffusion:${modelVersion}`,
-      {
-        input: {
-          prompt_a: prompt,
-          denoising: 0.75,
-          seed: Math.floor(Math.random() * 100000)
-        }
-      }
-    );
+    // 连接到Facebook官方的MusicGen Space
+    const app = await client("facebook/MusicGen", {});
 
-    console.log('✅ Replicate API 调用成功. 输出:', output);
+    console.log(`🚀 提交生成任务, 提示词: "${prompt}", 时长: ${duration}s`);
 
-    if (!output || !output.audio) {
-      throw new Error('Replicate API 未返回有效的音乐URL');
+    // 提交预测任务
+    // 这里的参数名和顺序需要和Hugging Face Space上的UI组件完全对应
+    const result = await app.predict("/predict", [
+      prompt, // Text
+      null,   // Melody (null for text-to-music)
+      duration, // Duration
+    ]);
+
+    console.log('✅ Hugging Face任务完成. 结果:', result);
+
+    // result.data[0].url 是返回的临时文件URL
+    if (result && result.data && result.data[0] && result.data[0].url) {
+      return result.data[0].url;
+    } else {
+      throw new Error('Hugging Face API返回的数据格式不正确');
     }
 
-    // Riffusion直接返回音频URL
-    return output.audio;
-    
   } catch (error) {
-    console.error('❌ Replicate API 调用失败:', error);
-    if (error.response) {
-      const errorBody = await error.response.json().catch(() => ({ detail: '无法解析错误响应' }));
-      console.error('Replicate API 错误详情:', errorBody.detail);
-      throw new Error(errorBody.detail || 'AI音乐生成服务遇到未知错误。');
-    }
-    throw new Error('AI音乐生成服务暂时不可用，请稍后再试。');
+    console.error('❌ 调用Hugging Face服务失败:', error);
+    throw new Error('AI音乐生成服务当前繁忙或不可用，请稍后再试。');
   }
 };
 
 module.exports = {
-  generateMusicWithReplicate,
+  generateMusicWithHuggingFace,
 }; 

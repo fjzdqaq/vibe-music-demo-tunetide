@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@alicloud/sts20150401": "^1.1.6",
+    "@gradio/client": "^1.15.4",
     "ali-oss": "^6.23.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
