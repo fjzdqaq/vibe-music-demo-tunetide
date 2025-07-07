@@ -98,14 +98,7 @@ const PlaylistAIGenerator = ({ playlist, onClose }) => {
     }, 1000);
   };
 
-  const openExternalGenerator = () => {
-    const styleDesc = generateStyleDescription();
-    const combinedPrompt = `${userScene.trim()}, ${styleDesc}`;
-    
-    // 打开外部音乐生成器，并尝试预填充描述
-    const encodedPrompt = encodeURIComponent(combinedPrompt);
-    window.open(`https://huggingface.co/spaces/facebook/MusicGen?prompt=${encodedPrompt}`, '_blank');
-  };
+
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -209,20 +202,7 @@ const PlaylistAIGenerator = ({ playlist, onClose }) => {
             </button>
           </div>
 
-          {/* 外部生成器选项 */}
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-            <h3 className="font-medium text-gray-900 mb-2">或使用外部AI音乐生成器</h3>
-            <p className="text-sm text-gray-600 mb-3">
-              我们会自动为您组合播放列表风格和场景描述
-            </p>
-            <button
-              onClick={openExternalGenerator}
-              disabled={!userScene.trim()}
-              className="w-full bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700 disabled:opacity-50 transition-colors"
-            >
-              在新窗口中打开 MusicGen
-            </button>
-          </div>
+
 
           {/* 生成结果 */}
           {generatedMusic && (
