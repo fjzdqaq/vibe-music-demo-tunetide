@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # MongoDB 数据库
+  mongodb:
+    image: mongo:7.0
+    container_name: tunetide-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: tunetide
+    networks:
+      - tunetide-network
+
+  # 后端 API 服务
+  backend:
+    build: ./backend
+    container_name: tunetide-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - ./music:/app/music
+    depends_on:
+      - mongodb
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://admin:password@mongodb:27017/tunetide?authSource=admin
+      - JWT_SECRET=your-super-secret-jwt-key-here
+      - JWT_EXPIRES_IN=7d
+      - PORT=3000
+    networks:
+      - tunetide-network
+
+  # 前端 Web 应用
+  frontend:
+    build: ./frontend
+    container_name: tunetide-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://localhost:3000/api
+    networks:
+      - tunetide-network
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  tunetide-network:
+    driver: bridge 
