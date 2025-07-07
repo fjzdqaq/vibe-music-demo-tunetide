@@ -113,4 +113,12 @@ export const adminAPI = {
   toggleAdmin: (id) => api.patch(`/admin/users/${id}/toggle-admin`),
 };
 
+// AI音乐生成 API
+export const musicgenAPI = {
+  generateMusic: async (data) => {
+    const response = await api.post('/musicgen/generate', data);
+    return response.data;
+  },
+};
+
 export default api; 

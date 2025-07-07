@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Wand2, Music, Upload, Download, Play, X } from 'lucide-react';
+import { musicgenAPI } from '../services/api';
 
 const PlaylistAIGenerator = ({ playlist, onClose }) => {
   const [userScene, setUserScene] = useState('');
@@ -43,39 +44,23 @@ const PlaylistAIGenerator = ({ playlist, onClose }) => {
       console.log('🎵 开始生成AI歌曲:', combinedPrompt);
       
       // 调用真实的AI生成API
-      const response = await fetch('/api/musicgen/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          prompt: combinedPrompt,
-          duration: 20, // 20秒歌曲
-          style: 'pop',
-          withVocals: withVocals
-        })
+      const data = await musicgenAPI.generateMusic({
+        prompt: combinedPrompt,
+        duration: 30, // 30秒歌曲
+        withVocals: withVocals
       });
       
-      const data = await response.json();
-      
-      if (data.success) {
+      if (data.success && data.song) {
         setGeneratedMusic({
-          title: `AI生成 - ${userScene}`,
+          title: data.song.title,
           description: combinedPrompt,
-          duration: data.duration || 20,
-          withVocals: data.withVocals
+          duration: data.song.duration || 30,
+          withVocals: data.song.withVocals
         });
-        setAudioUrl(data.audioUrl);
+        setAudioUrl(data.song.filePath);
         console.log('✅ AI歌曲生成成功');
       } else {
-        if (data.code === 'MODEL_LOADING') {
-          setError('AI模型正在加载中，请等待1-2分钟后重试');
-        } else if (data.code === 'AUTH_ERROR') {
-          setError('服务配置错误，请联系管理员');
-        } else {
-          setError(data.message || '生成失败，请重试');
-        }
+        setError(data.message || '生成失败，请重试');
       }
       
     } catch (error) {
