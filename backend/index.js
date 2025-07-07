@@ -17,6 +17,9 @@ const { checkUnlockCapsules } = require('./utils/capsuleScheduler');
 
 const app = express();
 
+// 信任Render提供的代理
+app.set('trust proxy', 1);
+
 // 中间件
 app.use(cors());
 app.use(express.json());
