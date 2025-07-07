@@ -8,7 +8,7 @@ const router = express.Router();
 // AI歌曲生成接口
 router.post('/generate', requireAuth, async (req, res) => {
   try {
-    const { prompt, duration = 15, style = 'pop' } = req.body;
+    const { prompt, duration = 15, style = 'pop', withVocals = true } = req.body;
     
     if (!prompt || prompt.trim().length === 0) {
       return res.status(400).json({
@@ -17,7 +17,21 @@ router.post('/generate', requireAuth, async (req, res) => {
       });
     }
 
-    console.log('🎵 开始生成AI歌曲:', prompt);
+    // 优化提示词以支持人声生成
+    let enhancedPrompt = prompt.trim();
+    
+    if (withVocals) {
+      // 添加人声相关的关键词
+      enhancedPrompt += ', with vocals, singing, melodic vocals, lyrical song';
+    } else {
+      // 纯音乐
+      enhancedPrompt += ', instrumental, no vocals, background music';
+    }
+    
+    // 添加风格和质量提示
+    enhancedPrompt += `, ${style} style, high quality, clear audio`;
+
+    console.log('🎵 开始生成AI歌曲:', enhancedPrompt);
     
     // 调用HuggingFace MusicGen API
     const response = await fetch('https://api-inference.huggingface.co/models/facebook/musicgen-small', {
@@ -27,10 +41,11 @@ router.post('/generate', requireAuth, async (req, res) => {
       },
       method: 'POST',
       body: JSON.stringify({
-        inputs: prompt,
+        inputs: enhancedPrompt,
         parameters: {
           max_length: duration,
-          temperature: 0.8
+          temperature: 0.8,
+          do_sample: true
         }
       })
     });
@@ -82,7 +97,7 @@ router.post('/generate', requireAuth, async (req, res) => {
     
     console.log('✅ AI歌曲生成并上传成功:', audioUrl);
 
-    // 可选：保存到数据库作为临时歌曲
+    // 保存到数据库
     const tempSong = new Song({
       title: `AI生成 - ${prompt.substring(0, 20)}...`,
       artist: 'AI Generated',
@@ -91,7 +106,7 @@ router.post('/generate', requireAuth, async (req, res) => {
       scope: 'private',
       uploadedBy: req.user._id,
       isAIGenerated: true,
-      aiPrompt: prompt
+      aiPrompt: enhancedPrompt
     });
     
     await tempSong.save();
@@ -103,7 +118,8 @@ router.post('/generate', requireAuth, async (req, res) => {
       filename: filename,
       duration: duration,
       size: audioBuffer.byteLength,
-      prompt: prompt
+      prompt: enhancedPrompt,
+      withVocals: withVocals
     });
 
   } catch (error) {

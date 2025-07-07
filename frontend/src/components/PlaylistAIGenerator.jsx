@@ -7,6 +7,7 @@ const PlaylistAIGenerator = ({ playlist, onClose }) => {
   const [generating, setGenerating] = useState(false);
   const [audioUrl, setAudioUrl] = useState('');
   const [error, setError] = useState('');
+  const [withVocals, setWithVocals] = useState(true);
 
   // 分析播放列表生成音乐风格描述
   const generateStyleDescription = () => {
@@ -51,7 +52,8 @@ const PlaylistAIGenerator = ({ playlist, onClose }) => {
         body: JSON.stringify({
           prompt: combinedPrompt,
           duration: 20, // 20秒歌曲
-          style: 'pop'
+          style: 'pop',
+          withVocals: withVocals
         })
       });
       
@@ -61,7 +63,8 @@ const PlaylistAIGenerator = ({ playlist, onClose }) => {
         setGeneratedMusic({
           title: `AI生成 - ${userScene}`,
           description: combinedPrompt,
-          duration: data.duration || 20
+          duration: data.duration || 20,
+          withVocals: data.withVocals
         });
         setAudioUrl(data.audioUrl);
         console.log('✅ AI歌曲生成成功');
@@ -146,8 +149,35 @@ const PlaylistAIGenerator = ({ playlist, onClose }) => {
               rows="3"
               disabled={generating}
             />
-            <p className="text-xs text-gray-500 mt-1">
-              我们会结合您的播放列表风格和场景描述来生成个性化歌曲
+            
+            {/* 人声选项 */}
+            <div className="mt-3 flex items-center space-x-6">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="vocals"
+                  checked={withVocals}
+                  onChange={() => setWithVocals(true)}
+                  className="mr-2 text-purple-600"
+                  disabled={generating}
+                />
+                <span className="text-sm text-gray-700">带人声歌曲 🎤</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="vocals"
+                  checked={!withVocals}
+                  onChange={() => setWithVocals(false)}
+                  className="mr-2 text-purple-600"
+                  disabled={generating}
+                />
+                <span className="text-sm text-gray-700">纯音乐 🎵</span>
+              </label>
+            </div>
+            
+            <p className="text-xs text-gray-500 mt-2">
+              我们会结合您的播放列表风格和场景描述来生成个性化{withVocals ? '歌曲' : '音乐'}
             </p>
           </div>
 
