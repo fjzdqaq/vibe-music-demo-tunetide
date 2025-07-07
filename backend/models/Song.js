@@ -33,6 +33,15 @@ const songSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
+  // AI生成相关字段
+  isAIGenerated: {
+    type: Boolean,
+    default: false
+  },
+  aiPrompt: {
+    type: String,
+    trim: true
+  },
   createdAt: {
     type: Date,
     default: Date.now

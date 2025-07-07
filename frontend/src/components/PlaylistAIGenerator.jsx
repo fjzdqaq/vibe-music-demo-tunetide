@@ -6,6 +6,7 @@ const PlaylistAIGenerator = ({ playlist, onClose }) => {
   const [generatedMusic, setGeneratedMusic] = useState(null);
   const [generating, setGenerating] = useState(false);
   const [audioUrl, setAudioUrl] = useState('');
+  const [error, setError] = useState('');
 
   // 分析播放列表生成音乐风格描述
   const generateStyleDescription = () => {
@@ -26,52 +27,72 @@ const PlaylistAIGenerator = ({ playlist, onClose }) => {
 
   const handleGenerate = async () => {
     if (!userScene.trim()) {
-      alert('请输入您想要的音乐场景描述');
+      alert('请输入您想要的歌曲主题描述');
       return;
     }
 
     setGenerating(true);
+    setError('');
     
     try {
       // 组合提示词：播放列表风格 + 用户场景
       const styleDesc = generateStyleDescription();
       const combinedPrompt = `${userScene.trim()}, ${styleDesc}`;
       
-      // 这里我们先模拟生成过程，实际可以调用真实的API
-      setTimeout(() => {
-        // 模拟生成成功
+      console.log('🎵 开始生成AI歌曲:', combinedPrompt);
+      
+      // 调用真实的AI生成API
+      const response = await fetch('/api/musicgen/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          prompt: combinedPrompt,
+          duration: 20, // 20秒歌曲
+          style: 'pop'
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
         setGeneratedMusic({
           title: `AI生成 - ${userScene}`,
           description: combinedPrompt,
-          duration: 30
+          duration: data.duration || 20
         });
-        // 这里应该是真实的音频URL
-        setAudioUrl('https://www.soundjay.com/misc/sounds/bell-ringing-05.wav'); // 示例音频
-        setGenerating(false);
-      }, 3000);
+        setAudioUrl(data.audioUrl);
+        console.log('✅ AI歌曲生成成功');
+      } else {
+        if (data.code === 'MODEL_LOADING') {
+          setError('AI模型正在加载中，请等待1-2分钟后重试');
+        } else if (data.code === 'AUTH_ERROR') {
+          setError('服务配置错误，请联系管理员');
+        } else {
+          setError(data.message || '生成失败，请重试');
+        }
+      }
       
     } catch (error) {
-      console.error('生成音乐失败:', error);
-      alert('生成音乐失败，请重试');
+      console.error('生成歌曲失败:', error);
+      setError('网络错误，请检查连接后重试');
+    } finally {
       setGenerating(false);
     }
   };
 
   const handleUploadToLibrary = () => {
-    // 跳转到上传页面，并预填充生成的音乐信息
-    const uploadData = {
-      title: generatedMusic.title,
-      artist: 'AI Generated',
-      audioUrl: audioUrl,
-      isAIGenerated: true,
-      sourcePlaylist: playlist.name
-    };
+    // 歌曲已经在生成时自动保存到数据库了
+    // 这里只需要提示用户并关闭模态框
+    alert('AI歌曲已保存到您的音乐库！您可以在首页查看，也可以添加到播放列表或创建情绪胶囊。');
+    onClose();
     
-    // 将数据存储到localStorage，供上传页面使用
-    localStorage.setItem('aiGeneratedMusic', JSON.stringify(uploadData));
-    
-    // 跳转到上传页面
-    window.location.href = '/upload?source=ai';
+    // 可选：刷新页面以显示新歌曲
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
   };
 
   const openExternalGenerator = () => {
@@ -89,10 +110,10 @@ const PlaylistAIGenerator = ({ playlist, onClose }) => {
         <div className="p-6">
           {/* 标题栏 */}
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-              <Wand2 className="w-6 h-6 mr-2 text-purple-600" />
-              为「{playlist.name}」生成AI音乐
-            </h2>
+                          <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                <Wand2 className="w-6 h-6 mr-2 text-purple-600" />
+                为「{playlist.name}」生成AI歌曲
+              </h2>
             <button
               onClick={onClose}
               className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
@@ -115,20 +136,27 @@ const PlaylistAIGenerator = ({ playlist, onClose }) => {
           {/* 用户场景输入 */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              描述您想要的音乐场景 *
+              描述您想要的歌曲主题和风格 *
             </label>
             <textarea
               value={userScene}
               onChange={(e) => setUserScene(e.target.value)}
-              placeholder="例如：适合雨天听的安静音乐、运动时的激励音乐、工作时的专注背景音乐..."
+              placeholder="例如：关于雨天思乡的抒情歌曲、励志的摇滚歌曲、温柔的爱情民谣..."
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               rows="3"
               disabled={generating}
             />
             <p className="text-xs text-gray-500 mt-1">
-              我们会结合您的播放列表风格和场景描述来生成个性化音乐
+              我们会结合您的播放列表风格和场景描述来生成个性化歌曲
             </p>
           </div>
+
+          {/* 错误提示 */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
 
           {/* 生成按钮 */}
           <div className="mb-6">
@@ -145,7 +173,7 @@ const PlaylistAIGenerator = ({ playlist, onClose }) => {
               ) : (
                 <>
                   <Music className="w-5 h-5 mr-2" />
-                  生成AI音乐
+                  生成AI歌曲
                 </>
               )}
             </button>
@@ -194,7 +222,7 @@ const PlaylistAIGenerator = ({ playlist, onClose }) => {
                   className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
                 >
                   <Upload className="w-4 h-4 mr-2" />
-                  上传到音乐库
+                  保存到音乐库
                 </button>
                 
                 {audioUrl && (

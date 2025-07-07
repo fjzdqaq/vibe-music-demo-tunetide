@@ -12,6 +12,7 @@ const capsuleRoutes = require('./routes/capsules');
 const adminRoutes = require('./routes/admin');
 const stsRoutes = require('./routes/sts');
 const uploadRoutes = require('./routes/upload');
+const musicgenRoutes = require('./routes/musicgen');
 const { checkUnlockCapsules } = require('./utils/capsuleScheduler');
 
 const app = express();
@@ -53,6 +54,7 @@ app.use('/api/capsules', capsuleRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/sts', stsRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/musicgen', musicgenRoutes);
 
 // 健康检查
 app.get('/health', (req, res) => {
