@@ -25,6 +25,7 @@
     "music-metadata": "^7.14.0",
     "node-cron": "^3.0.3",
     "node-fetch": "^2.7.0",
+    "replicate": "^1.0.1",
     "uuid": "^10.0.0"
   },
   "devDependencies": {
