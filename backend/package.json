@@ -8,7 +8,8 @@
     "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "seed:music": "node scripts/seedMusic.js",
-    "init-data": "node scripts/init-data.js"
+    "init-data": "node scripts/init-data.js",
+    "migrate:playqueue": "node scripts/migrate-playqueue.js"
   },
   "dependencies": {
     "@alicloud/sts20150401": "^1.1.6",

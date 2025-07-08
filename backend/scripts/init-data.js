@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const User = require('../models/User');
 const Song = require('../models/Song');
+const PlayQueue = require('../models/PlayQueue');
 const fs = require('fs');
 const path = require('path');
 
@@ -102,6 +103,19 @@ const initializeData = async () => {
 
     if (songCount === 0) {
       console.log('📁 数据库中没有歌曲，可以运行 npm run seed 来添加示例音乐');
+    }
+
+    // 4. 迁移PlayQueue数据库
+    console.log('🔄 开始迁移PlayQueue数据库...');
+    try {
+      // 确保PlayQueue集合存在并创建索引
+      await PlayQueue.collection.createIndex({ userId: 1, addedAt: -1 });
+      console.log('✅ PlayQueue索引创建成功');
+      
+      const playQueueCount = await PlayQueue.countDocuments();
+      console.log(`📊 当前播放队列记录数: ${playQueueCount}`);
+    } catch (error) {
+      console.error('❌ PlayQueue迁移失败:', error);
     }
 
     console.log('🎉 数据初始化完成！');

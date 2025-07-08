@@ -13,7 +13,7 @@ const capsuleRoutes = require('./routes/capsules');
 const adminRoutes = require('./routes/admin');
 const stsRoutes = require('./routes/sts');
 const uploadRoutes = require('./routes/upload');
-// const musicgenRoutes = require('./routes/musicgen');
+const musicgenRoutes = require('./routes/musicgen');
 const { checkUnlockCapsules } = require('./utils/capsuleScheduler');
 
 const app = express();
@@ -59,7 +59,7 @@ app.use('/api/capsules', capsuleRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/sts', stsRoutes);
 app.use('/api/upload', uploadRoutes);
-// app.use('/api/musicgen', musicgenRoutes);
+app.use('/api/musicgen', musicgenRoutes);
 
 // 健康检查
 app.get('/health', (req, res) => {
@@ -90,6 +90,7 @@ app.listen(PORT, () => {
   console.log(`   ✅ 播放列表功能`);
   console.log(`   ✅ 情绪胶囊功能`);
   console.log(`   ✅ 音乐上传功能 (阿里云OSS - 华北2)`);
+  console.log(`   ✅ AI音乐生成功能 (Stability AI)`);
   console.log(`   🔧 支持格式: MP3, WAV, FLAC, M4A, OGG, AAC`);
 });
 
