@@ -8,11 +8,12 @@ const cron = require('node-cron');
 const authRoutes = require('./routes/auth');
 const songRoutes = require('./routes/songs');
 const playlistRoutes = require('./routes/playlists');
+const playQueueRoutes = require('./routes/playQueue');
 const capsuleRoutes = require('./routes/capsules');
 const adminRoutes = require('./routes/admin');
 const stsRoutes = require('./routes/sts');
 const uploadRoutes = require('./routes/upload');
-const musicgenRoutes = require('./routes/musicgen');
+// const musicgenRoutes = require('./routes/musicgen');
 const { checkUnlockCapsules } = require('./utils/capsuleScheduler');
 
 const app = express();
@@ -53,11 +54,12 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/songs', songRoutes);
 app.use('/api/playlists', playlistRoutes);
+app.use('/api/play-queue', playQueueRoutes);
 app.use('/api/capsules', capsuleRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/sts', stsRoutes);
 app.use('/api/upload', uploadRoutes);
-app.use('/api/musicgen', musicgenRoutes);
+// app.use('/api/musicgen', musicgenRoutes);
 
 // 健康检查
 app.get('/health', (req, res) => {

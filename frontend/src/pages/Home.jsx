@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { usePlayer } from '../contexts/PlayerContext';
 import { useAuth } from '../contexts/AuthContext';
 import { songAPI, playlistAPI, capsuleAPI } from '../services/api';
-import { Search, Play, Plus, Clock, X, Calendar, Heart } from 'lucide-react';
+import { Search, Play, Plus, Clock, X, Calendar, Heart, ListPlus } from 'lucide-react';
 import { getBeijingTime, formatBeijingTimeForInput, parseBeijingTimeFromInput, addDaysToBeijingTime } from '../utils/timeUtils';
 
 const Home = () => {
@@ -14,7 +14,7 @@ const Home = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   
-  // 播放列表相关状态
+  // 喜欢列表相关状态
   const [playlists, setPlaylists] = useState([]);
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
   const [selectedSongForPlaylist, setSelectedSongForPlaylist] = useState(null);
@@ -28,7 +28,7 @@ const Home = () => {
   });
   
   const [error, setError] = useState('');
-  const { playSong, currentSong, isPlaying } = usePlayer();
+  const { playSong, currentSong, isPlaying, addToPlayQueue } = usePlayer();
   const { user } = useAuth();
 
   useEffect(() => {
@@ -44,7 +44,7 @@ const Home = () => {
     fetchSongs();
   }, [currentPage, debouncedSearchQuery]);
 
-  // 获取用户的播放列表
+  // 获取用户的喜欢列表
   useEffect(() => {
     fetchPlaylists();
   }, []);
@@ -72,7 +72,7 @@ const Home = () => {
       const response = await playlistAPI.getPlaylists();
       setPlaylists(response.data || []);
     } catch (error) {
-      console.error('获取播放列表失败:', error);
+      console.error('获取喜欢列表失败:', error);
     }
   };
 
@@ -86,8 +86,18 @@ const Home = () => {
     playSong(song, songs);
   };
 
-  // 添加到播放列表
-  const handleAddToPlaylist = (song) => {
+  // 添加到播放队列
+  const handleAddToPlayQueue = async (song) => {
+    const success = await addToPlayQueue(song);
+    if (success) {
+      alert('歌曲已添加到播放队列！');
+    } else {
+      alert('添加失败，请稍后再试');
+    }
+  };
+
+  // 添加到喜欢列表
+  const handleAddToFavorite = (song) => {
     setSelectedSongForPlaylist(song);
     setShowPlaylistModal(true);
     setError('');
@@ -98,10 +108,9 @@ const Home = () => {
       await playlistAPI.addSongToPlaylist(playlistId, selectedSongForPlaylist._id);
       setShowPlaylistModal(false);
       setSelectedSongForPlaylist(null);
-      // 可以显示成功提示
-      alert('歌曲已添加到播放列表！');
+      alert('歌曲已添加到喜欢列表！');
     } catch (error) {
-      console.error('添加歌曲到播放列表失败:', error);
+      console.error('添加歌曲到喜欢列表失败:', error);
       setError(error.response?.data?.message || '添加失败');
     }
   };
@@ -310,11 +319,18 @@ const Home = () => {
                     <Play className="w-4 h-4" />
                   </button>
                   <button 
-                    onClick={() => handleAddToPlaylist(song)}
-                    className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-                    title="添加到播放列表"
+                    onClick={() => handleAddToPlayQueue(song)}
+                    className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
+                    title="添加到播放队列"
                   >
-                    <Plus className="w-4 h-4" />
+                    <ListPlus className="w-4 h-4" />
+                  </button>
+                  <button 
+                    onClick={() => handleAddToFavorite(song)}
+                    className="p-2 text-gray-400 hover:text-red-600 transition-colors"
+                    title="添加到喜欢列表"
+                  >
+                    <Heart className="w-4 h-4" />
                   </button>
                   <button 
                     onClick={() => handleCreateCapsule(song)}
@@ -355,12 +371,12 @@ const Home = () => {
         )}
       </div>
 
-      {/* 添加到播放列表模态框 */}
+      {/* 添加到喜欢列表模态框 */}
       {showPlaylistModal && selectedSongForPlaylist && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900">添加到播放列表</h2>
+              <h2 className="text-xl font-bold text-gray-900">添加到喜欢列表</h2>
               <button onClick={closeModals} className="p-2 text-gray-400 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
@@ -381,7 +397,7 @@ const Home = () => {
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {playlists.length === 0 ? (
                 <p className="text-gray-500 text-center py-4">
-                  暂无播放列表，请先创建一个播放列表
+                  暂无喜欢列表，请先创建一个喜欢列表
                 </p>
               ) : (
                 playlists.map((playlist) => (
@@ -390,7 +406,10 @@ const Home = () => {
                     onClick={() => addSongToPlaylist(playlist._id)}
                     className="w-full text-left p-3 rounded-lg border hover:bg-gray-50 transition-colors"
                   >
-                    <div className="font-medium">{playlist.name}</div>
+                    <div className="font-medium flex items-center">
+                      <Heart className="w-4 h-4 mr-2 text-red-500" />
+                      {playlist.name}
+                    </div>
                     <div className="text-sm text-gray-500">
                       {playlist.songs?.length || 0} 首歌曲
                     </div>

@@ -79,6 +79,15 @@ export const playlistAPI = {
     api.delete(`/playlists/${playlistId}/songs/${songId}`),
 };
 
+// 播放队列 API
+export const playQueueAPI = {
+  getPlayQueue: () => api.get('/play-queue'),
+  addToPlayQueue: (songId) => api.post('/play-queue/add', { songId }),
+  recordPlayed: (songId) => api.post('/play-queue/played', { songId }),
+  removeFromPlayQueue: (id) => api.delete(`/play-queue/${id}`),
+  clearPlayQueue: () => api.delete('/play-queue'),
+};
+
 // 情绪胶囊 API
 export const capsuleAPI = {
   getCapsules: (params) => api.get('/capsules', { params }),

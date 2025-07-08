@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { playlistAPI } from '../services/api';
-import { Music, Plus, Play, Trash2, X } from 'lucide-react';
+import { Music, Plus, Play, Trash2, X, Heart } from 'lucide-react';
 
 const Playlists = () => {
   const [playlists, setPlaylists] = useState([]);
@@ -11,7 +11,7 @@ const Playlists = () => {
   const [createLoading, setCreateLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // 获取播放列表
+  // 获取喜欢列表
   useEffect(() => {
     fetchPlaylists();
   }, []);
@@ -22,18 +22,18 @@ const Playlists = () => {
       const response = await playlistAPI.getPlaylists();
       setPlaylists(response.data || []);
     } catch (error) {
-      console.error('获取播放列表失败:', error);
-      setError('获取播放列表失败');
+      console.error('获取喜欢列表失败:', error);
+      setError('获取喜欢列表失败');
     } finally {
       setLoading(false);
     }
   };
 
-  // 创建播放列表
+  // 创建喜欢列表
   const handleCreatePlaylist = async (e) => {
     e.preventDefault();
     if (!createForm.name.trim()) {
-      setError('播放列表名称不能为空');
+      setError('喜欢列表名称不能为空');
       return;
     }
 
@@ -52,16 +52,16 @@ const Playlists = () => {
       setCreateForm({ name: '', description: '' });
       setShowCreateModal(false);
     } catch (error) {
-      console.error('创建播放列表失败:', error);
-      setError(error.response?.data?.message || '创建播放列表失败');
+      console.error('创建喜欢列表失败:', error);
+      setError(error.response?.data?.message || '创建喜欢列表失败');
     } finally {
       setCreateLoading(false);
     }
   };
 
-  // 删除播放列表
+  // 删除喜欢列表
   const handleDeletePlaylist = async (playlistId, playlistName) => {
-    if (!confirm(`确定要删除播放列表"${playlistName}"吗？`)) {
+    if (!confirm(`确定要删除喜欢列表"${playlistName}"吗？`)) {
       return;
     }
 
@@ -69,8 +69,8 @@ const Playlists = () => {
       await playlistAPI.deletePlaylist(playlistId);
       setPlaylists(prev => prev.filter(p => p._id !== playlistId));
     } catch (error) {
-      console.error('删除播放列表失败:', error);
-      setError('删除播放列表失败');
+      console.error('删除喜欢列表失败:', error);
+      setError('删除喜欢列表失败');
     }
   };
 
@@ -96,10 +96,10 @@ const Playlists = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-900 mb-2">
-          我的播放列表
+          我的喜欢列表
         </h1>
         <p className="text-xl text-gray-600">
-          管理您的音乐收藏
+          管理您喜欢的音乐收藏
         </p>
       </div>
 
@@ -116,36 +116,36 @@ const Playlists = () => {
         </div>
       )}
 
-      {/* 创建播放列表按钮 */}
+      {/* 创建喜欢列表按钮 */}
       <div className="mb-8">
         <button 
           onClick={() => setShowCreateModal(true)}
           className="btn btn-primary flex items-center space-x-2"
         >
           <Plus className="w-5 h-5" />
-          <span>创建播放列表</span>
+          <span>创建喜欢列表</span>
         </button>
       </div>
 
-      {/* 播放列表网格 */}
+      {/* 喜欢列表网格 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {playlists.length === 0 ? (
           <div className="col-span-full card p-12 text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Music className="w-8 h-8 text-gray-400" />
+            <div className="w-16 h-16 bg-gradient-to-br from-red-400 to-pink-400 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Heart className="w-8 h-8 text-white" />
             </div>
-            <p className="text-gray-500 text-lg mb-2">还没有播放列表</p>
-            <p className="text-sm text-gray-400">点击上方按钮创建您的第一个播放列表</p>
+            <p className="text-gray-500 text-lg mb-2">还没有喜欢列表</p>
+            <p className="text-sm text-gray-400">点击上方按钮创建您的第一个喜欢列表</p>
           </div>
         ) : (
           playlists.map((playlist) => (
             <div key={playlist._id} className="card p-6 hover:shadow-md transition-shadow">
-              {/* 播放列表封面 */}
-              <div className="w-full h-32 bg-gradient-to-br from-primary-400 to-secondary-400 rounded-lg flex items-center justify-center mb-4">
-                <Music className="w-8 h-8 text-white" />
+              {/* 喜欢列表封面 */}
+              <div className="w-full h-32 bg-gradient-to-br from-red-400 to-pink-400 rounded-lg flex items-center justify-center mb-4">
+                <Heart className="w-8 h-8 text-white" />
               </div>
 
-              {/* 播放列表信息 */}
+              {/* 喜欢列表信息 */}
               <div className="mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 mb-1 truncate">
                   {playlist.name}
@@ -176,7 +176,7 @@ const Playlists = () => {
                 <button
                   onClick={() => handleDeletePlaylist(playlist._id, playlist.name)}
                   className="p-2 text-gray-400 hover:text-red-600 transition-colors"
-                  title="删除播放列表"
+                  title="删除喜欢列表"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -186,12 +186,12 @@ const Playlists = () => {
         )}
       </div>
 
-      {/* 创建播放列表模态框 */}
+      {/* 创建喜欢列表模态框 */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900">创建播放列表</h2>
+              <h2 className="text-xl font-bold text-gray-900">创建喜欢列表</h2>
               <button
                 onClick={closeModal}
                 className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
@@ -203,7 +203,7 @@ const Playlists = () => {
             <form onSubmit={handleCreatePlaylist}>
               <div className="mb-4">
                 <label htmlFor="playlistName" className="block text-sm font-medium text-gray-700 mb-2">
-                  播放列表名称
+                  喜欢列表名称
                 </label>
                 <input
                   id="playlistName"
@@ -211,7 +211,7 @@ const Playlists = () => {
                   value={createForm.name}
                   onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
                   className="input"
-                  placeholder="给你的播放列表起个名字..."
+                  placeholder="给你的喜欢列表起个名字..."
                   autoFocus
                   maxLength={50}
                 />
@@ -222,14 +222,14 @@ const Playlists = () => {
 
               <div className="mb-4">
                 <label htmlFor="playlistDescription" className="block text-sm font-medium text-gray-700 mb-2">
-                  播放列表描述
+                  喜欢列表描述
                 </label>
                 <textarea
                   id="playlistDescription"
                   value={createForm.description}
                   onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
                   className="input"
-                  placeholder="描述你的播放列表..."
+                  placeholder="描述你的喜欢列表..."
                   rows="3"
                   maxLength={200}
                 />

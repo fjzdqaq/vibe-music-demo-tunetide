@@ -10,6 +10,7 @@ import Player from './components/Player';
 import Home from './pages/Home';
 import Playlists from './pages/Playlists';
 import PlaylistDetail from './pages/PlaylistDetail';
+
 import Capsules from './pages/Capsules';
 import Upload from './pages/Upload';
 import Profile from './pages/Profile';
@@ -28,6 +29,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/playlists" element={<PrivateRoute><Playlists /></PrivateRoute>} />
               <Route path="/playlists/:id" element={<PrivateRoute><PlaylistDetail /></PrivateRoute>} />
+
               <Route path="/capsules" element={<PrivateRoute><Capsules /></PrivateRoute>} />
               <Route path="/upload" element={<PrivateRoute><Upload /></PrivateRoute>} />
               <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />

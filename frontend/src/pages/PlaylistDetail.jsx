@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { playlistAPI } from '../services/api';
 import { usePlayer } from '../contexts/PlayerContext';
-import { Play, Music, ArrowLeft, Wand2 } from 'lucide-react';
+import { Play, Music, ArrowLeft, Wand2, Heart } from 'lucide-react';
 import PlaylistAIGenerator from '../components/PlaylistAIGenerator';
 
 const PlaylistDetail = () => {
@@ -17,15 +17,15 @@ const PlaylistDetail = () => {
     const fetchPlaylist = async () => {
       try {
         setLoading(true);
-        console.log('正在获取播放列表，ID:', id);
+        console.log('正在获取喜欢列表，ID:', id);
         const response = await playlistAPI.getPlaylist(id);
         console.log('API响应:', response.data);
         setPlaylist(response.data);
         setError(null);
       } catch (err) {
-        console.error('获取播放列表失败:', err);
+        console.error('获取喜欢列表失败:', err);
         console.error('错误详情:', err.response?.data);
-        setError('无法加载播放列表详情，请稍后再试。');
+        setError('无法加载喜欢列表详情，请稍后再试。');
       } finally {
         setLoading(false);
       }
@@ -39,7 +39,7 @@ const PlaylistDetail = () => {
   if (loading) {
     return (
       <div className="text-center p-10">
-        <p className="text-gray-600">正在加载播放列表...</p>
+        <p className="text-gray-600">正在加载喜欢列表...</p>
       </div>
     );
   }
@@ -50,7 +50,7 @@ const PlaylistDetail = () => {
         <p className="text-red-600">{error}</p>
         <Link to="/playlists" className="mt-4 inline-block text-blue-600 hover:text-blue-800">
           <ArrowLeft className="inline mr-2 w-4 h-4" />
-          返回播放列表
+          返回喜欢列表
         </Link>
       </div>
     );
@@ -59,28 +59,31 @@ const PlaylistDetail = () => {
   if (!playlist) {
     return (
       <div className="text-center p-10">
-        <p className="text-gray-600">未找到该播放列表。</p>
+        <p className="text-gray-600">未找到该喜欢列表。</p>
         <Link to="/playlists" className="mt-4 inline-block text-blue-600 hover:text-blue-800">
           <ArrowLeft className="inline mr-2 w-4 h-4" />
-          返回播放列表
+          返回喜欢列表
         </Link>
       </div>
     );
   }
 
-  console.log('播放列表数据:', playlist);
+  console.log('喜欢列表数据:', playlist);
   console.log('歌曲列表:', playlist.songs);
 
   return (
     <div className="p-6 bg-white min-h-screen">
       <Link to="/playlists" className="text-gray-600 hover:text-gray-800 mb-6 inline-flex items-center">
         <ArrowLeft className="mr-2 w-4 h-4" />
-        返回所有播放列表
+        返回所有喜欢列表
       </Link>
       <div className="mb-8">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <h1 className="text-4xl font-bold text-gray-900">{playlist.name}</h1>
+            <h1 className="text-4xl font-bold text-gray-900 flex items-center">
+              <Heart className="w-8 h-8 mr-3 text-red-500" />
+              {playlist.name}
+            </h1>
             {playlist.description && (
               <p className="text-gray-600 mt-2">{playlist.description}</p>
             )}
@@ -129,10 +132,10 @@ const PlaylistDetail = () => {
         </div>
       ) : (
         <div className="text-center py-16 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-          <Music className="mx-auto text-gray-400 mb-4 w-16 h-16" />
-          <p className="text-gray-600 text-lg mb-2">这个播放列表是空的</p>
+          <Heart className="mx-auto text-gray-400 mb-4 w-16 h-16" />
+          <p className="text-gray-600 text-lg mb-2">这个喜欢列表是空的</p>
           <p className="text-gray-500 text-sm mb-6">快去添加一些喜欢的歌曲吧！</p>
-          <Link to="/" className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-lg transition-colors">
+          <Link to="/" className="inline-block bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-6 rounded-lg transition-colors">
             去首页添加歌曲
           </Link>
         </div>

@@ -8,12 +8,15 @@ import {
   Volume2, 
   Repeat,
   Heart,
-  FileText
+  FileText,
+  ListMusic
 } from 'lucide-react';
 import Lyrics from './Lyrics';
+import PlayQueue from './PlayQueue';
 
 const Player = () => {
   const [showLyrics, setShowLyrics] = useState(false);
+  const [showPlayQueue, setShowPlayQueue] = useState(false);
   
   const {
     currentSong,
@@ -22,6 +25,7 @@ const Player = () => {
     duration,
     volume,
     isLooping,
+    playQueue,
     togglePlay,
     playPrevious,
     playNext,
@@ -132,6 +136,19 @@ const Player = () => {
                 <FileText className="w-4 h-4 text-gray-700" />
               </button>
               
+              <button 
+                onClick={() => setShowPlayQueue(true)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
+                title="播放队列"
+              >
+                <ListMusic className="w-4 h-4 text-gray-700" />
+                {playQueue.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {playQueue.length}
+                  </span>
+                )}
+              </button>
+              
               <div className="flex items-center space-x-2">
                 <Volume2 className="w-4 h-4 text-gray-700" />
                 <input
@@ -176,6 +193,12 @@ const Player = () => {
         isOpen={showLyrics}
         onClose={() => setShowLyrics(false)}
         currentTime={currentTime}
+      />
+      
+      {/* 播放队列组件 */}
+      <PlayQueue
+        isOpen={showPlayQueue}
+        onClose={() => setShowPlayQueue(false)}
       />
     </>
   );

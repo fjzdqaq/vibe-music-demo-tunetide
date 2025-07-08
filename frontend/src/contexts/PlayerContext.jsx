@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
+import { playQueueAPI } from '../services/api';
 
 const PlayerContext = createContext();
 
@@ -20,6 +21,9 @@ export const PlayerProvider = ({ children }) => {
   const [isLooping, setIsLooping] = useState(false);
   const [playlist, setPlaylist] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
+  const [playQueue, setPlayQueue] = useState([]);
+  const [queueIndex, setQueueIndex] = useState(-1);
+  const [queueLoading, setQueueLoading] = useState(false);
 
   // 下一首 - 使用useCallback避免依赖问题
   const playNext = useCallback(() => {
@@ -98,6 +102,33 @@ export const PlayerProvider = ({ children }) => {
     }
   }, [isLooping]);
 
+  // 加载播放队列
+  const loadPlayQueue = useCallback(async () => {
+    try {
+      setQueueLoading(true);
+      const response = await playQueueAPI.getPlayQueue();
+      const queueData = response.data.data || [];
+      setPlayQueue(queueData.map(item => ({
+        ...item.song,
+        queueId: item._id,
+        addedType: item.addedType,
+        addedAt: item.addedAt
+      })));
+    } catch (error) {
+      console.error('加载播放队列失败:', error);
+    } finally {
+      setQueueLoading(false);
+    }
+  }, []);
+
+  // 初始化时加载播放队列
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      loadPlayQueue();
+    }
+  }, [loadPlayQueue]);
+
   // 播放歌曲
   const playSong = async (song, songList = []) => {
     if (!song || !song.audioUrl) return;
@@ -116,6 +147,15 @@ export const PlayerProvider = ({ children }) => {
         audioRef.current.load(); // 确保重新加载
         await audioRef.current.play();
         setIsPlaying(true);
+        
+        // 记录播放历史到数据库
+        try {
+          await playQueueAPI.recordPlayed(song._id);
+          // 重新加载播放队列
+          loadPlayQueue();
+        } catch (error) {
+          console.error('记录播放历史失败:', error);
+        }
       }
     } catch (error) {
       console.error('播放失败:', error);
@@ -192,6 +232,80 @@ export const PlayerProvider = ({ children }) => {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
+  // 添加歌曲到播放队列
+  const addToPlayQueue = async (song) => {
+    try {
+      await playQueueAPI.addToPlayQueue(song._id);
+      // 重新加载播放队列
+      loadPlayQueue();
+      return true;
+    } catch (error) {
+      console.error('添加歌曲到播放队列失败:', error);
+      return false;
+    }
+  };
+
+  // 从播放队列中移除歌曲
+  const removeFromPlayQueue = async (queueId) => {
+    try {
+      await playQueueAPI.removeFromPlayQueue(queueId);
+      // 重新加载播放队列
+      loadPlayQueue();
+      return true;
+    } catch (error) {
+      console.error('从播放队列移除歌曲失败:', error);
+      return false;
+    }
+  };
+
+  // 清空播放队列
+  const clearPlayQueue = async () => {
+    try {
+      await playQueueAPI.clearPlayQueue();
+      setPlayQueue([]);
+      setQueueIndex(-1);
+      return true;
+    } catch (error) {
+      console.error('清空播放队列失败:', error);
+      return false;
+    }
+  };
+
+  // 播放队列中的歌曲
+  const playFromQueue = (song) => {
+    const index = playQueue.findIndex(s => s._id === song._id);
+    if (index !== -1) {
+      setQueueIndex(index);
+      playSong(song, playQueue);
+    }
+  };
+
+  // 播放队列中的下一首
+  const playNextInQueue = () => {
+    if (playQueue.length === 0) return;
+    
+    const nextIndex = queueIndex < playQueue.length - 1 ? queueIndex + 1 : 0;
+    const nextSong = playQueue[nextIndex];
+    
+    if (nextSong) {
+      setQueueIndex(nextIndex);
+      playSong(nextSong, playQueue);
+    }
+  };
+
+  // 播放队列中的上一首
+  const playPrevInQueue = () => {
+    if (playQueue.length === 0) return;
+    
+    const prevIndex = queueIndex > 0 ? queueIndex - 1 : playQueue.length - 1;
+    const prevSong = playQueue[prevIndex];
+    
+    if (prevSong) {
+      setQueueIndex(prevIndex);
+      playSong(prevSong, playQueue);
+    }
+  };
+
   const value = {
     currentSong,
     isPlaying,
@@ -201,6 +315,9 @@ export const PlayerProvider = ({ children }) => {
     isLooping,
     playlist,
     currentIndex,
+    playQueue,
+    queueIndex,
+    queueLoading,
     playSong,
     togglePlay,
     playPrevious,
@@ -210,6 +327,13 @@ export const PlayerProvider = ({ children }) => {
     toggleLoop,
     stopPlaying,
     formatTime,
+    addToPlayQueue,
+    removeFromPlayQueue,
+    clearPlayQueue,
+    playFromQueue,
+    playNextInQueue,
+    playPrevInQueue,
+    loadPlayQueue,
   };
 
   return (

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { User, Calendar, Music, Clock, ListMusic, Edit } from 'lucide-react';
+import { User, Calendar, Music, Clock, Heart, Edit } from 'lucide-react';
 import { songAPI, playlistAPI, capsuleAPI } from '../services/api';
 
 const Profile = () => {
@@ -79,11 +79,11 @@ const Profile = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <ListMusic className="w-5 h-5 text-blue-600" />
+            <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+              <Heart className="w-5 h-5 text-red-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">播放列表</p>
+              <p className="text-sm text-gray-500">喜欢列表</p>
               <p className="text-2xl font-bold text-gray-900">
                 {loading ? '-' : stats.playlistsCount}
               </p>

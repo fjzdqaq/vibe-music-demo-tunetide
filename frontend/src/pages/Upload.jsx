@@ -529,7 +529,7 @@ const Upload = () => {
                   <div>
                     <h4 className="font-medium text-purple-900">AI生成的音乐</h4>
                     <p className="text-sm text-purple-700">
-                      这首音乐是基于您的播放列表风格生成的，将被标记为AI创作。
+                      这首音乐是基于您的喜欢列表风格生成的，将被标记为AI创作。
                     </p>
                   </div>
                 </div>

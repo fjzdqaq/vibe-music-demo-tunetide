@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, ListMusic, Clock, Upload, User, LogOut, Shield } from 'lucide-react';
+import { Home, ListMusic, Clock, Upload, User, LogOut, Shield, Heart } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const Navbar = () => {
@@ -26,8 +26,8 @@ const Navbar = () => {
             <span>主页</span>
           </NavLink>
           <NavLink to="/playlists" className={getLinkClass}>
-            <ListMusic className="w-5 h-5" />
-            <span>播放列表</span>
+            <Heart className="w-5 h-5" />
+            <span>喜欢列表</span>
           </NavLink>
           <NavLink to="/capsules" className={getLinkClass}>
             <Clock className="w-5 h-5" />
