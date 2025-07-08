@@ -13,7 +13,7 @@ const ENGINE_ID = 'stable-audio-2.0';
 const generateMusicWithStability = async (prompt, duration) => {
   const apiKey = process.env.STABILITY_API_KEY;
   if (!apiKey) {
-    throw new Error('Stability AI API密钥未配置 (STABILITY_API_KEY)');
+    throw new Error('AI音乐生成功能暂未配置。请联系管理员获取Stability AI API密钥以启用此功能。您仍可以使用上传音乐和其他功能。');
   }
 
   console.log(`🎵 调用 Stability AI (${ENGINE_ID}), 提示词: "${prompt}"`);

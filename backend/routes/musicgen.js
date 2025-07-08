@@ -55,6 +55,16 @@ router.post('/generate', requireAuth, async (req, res) => {
     
   } catch (error) {
     console.error('❌ AI纯音乐生成流程失败:', error.message);
+    
+    // 如果是API密钥未配置的错误，返回400而不是500
+    if (error.message.includes('AI音乐生成功能暂未配置')) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+        code: 'AI_SERVICE_NOT_CONFIGURED'
+      });
+    }
+    
     res.status(500).json({
       success: false,
       message: error.message || 'AI纯音乐生成失败，请稍后重试',
