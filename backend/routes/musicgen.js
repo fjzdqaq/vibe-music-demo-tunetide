@@ -22,35 +22,37 @@ router.post('/generate', requireAuth, async (req, res) => {
     const audioBuffer = await generateMusicWithStability(prompt, duration);
     console.log(`✅ 音频Buffer已生成, 大小: ${audioBuffer.length} bytes`);
 
-    // 2. 上传到OSS
-    const fileName = `ai-music-${Date.now()}.wav`;
-    console.log(`📤 正在上传 "${fileName}" 到OSS...`);
-    const ossUrl = await uploadToOSS(audioBuffer, fileName, 'audio/wav');
-    console.log(`✅ OSS上传成功: ${ossUrl}`);
+    // 2. 将AI生成的音频Buffer包装成类似multer文件对象的格式
+    const fileName = `AI-Music-${Date.now()}.mp3`;
+    const audioFile = {
+      buffer: audioBuffer,
+      originalname: fileName,
+      mimetype: 'audio/mpeg',
+      size: audioBuffer.length
+    };
+
+    console.log(`📤 正在上传AI生成的音乐到OSS...`);
     
-    // 3. 保存到数据库
-    const song = new Song({
+    // 3. 重用现有的uploadToOSS函数
+    const uploadResult = await uploadToOSS({
+      audioFile: audioFile,
+      coverFile: null, // AI音乐暂时不生成封面
       title: `AI生成: ${prompt.substring(0, 50)}`,
       artist: 'Stability AI',
-      fileName: fileName,
-      filePath: ossUrl,
-      coverPath: '/default-cover.jpg',
-      duration: duration,
-      isPublic: false,
-      uploadedBy: req.user.id,
+      uploadedBy: req.user._id,
+      scope: 'private', // AI生成的音乐默认为私有
       isAIGenerated: true,
       aiPrompt: prompt,
-      withVocals: false, // 明确这是纯音乐
+      withVocals: false // 纯音乐，无人声
     });
-    
-    await song.save();
-    console.log(`💾 AI纯音乐 "${song.title}" 已保存到数据库`);
+
+    console.log(`✅ AI音乐上传和保存成功`);
     
     // 4. 返回成功响应
     res.json({
       success: true,
-      message: 'AI纯音乐生成成功！',
-      song: song,
+      message: 'AI音乐生成成功！',
+      song: uploadResult.song,
     });
     
   } catch (error) {

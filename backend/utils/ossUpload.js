@@ -120,7 +120,7 @@ const extractEmbeddedCover = async (metadata) => {
 };
 
 // 主上传函数
-const uploadToOSS = async ({ audioFile, coverFile, title, artist, uploadedBy, scope = 'private' }) => {
+const uploadToOSS = async ({ audioFile, coverFile, title, artist, uploadedBy, scope = 'private', isAIGenerated = false, aiPrompt = null, withVocals = false }) => {
   const uploadedFiles = []; // 追踪已上传的文件，用于错误时清理
   
   try {
@@ -166,7 +166,10 @@ const uploadToOSS = async ({ audioFile, coverFile, title, artist, uploadedBy, sc
       audioUrl: audioResult.url,
       duration,
       scope,
-      uploadedBy
+      uploadedBy,
+      isAIGenerated,
+      aiPrompt,
+      withVocals
     });
     
     await song.save();
